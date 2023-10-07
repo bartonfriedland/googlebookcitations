@@ -1,13 +1,10 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLineEdit, QListWidget, QLabel, QTextBrowser, QMessageBox, QDesktopWidget
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import Qt, QUrl
+from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLineEdit, QListWidget, QLabel, QTextBrowser, QMessageBox
+from PyQt6.QtGui import QPixmap, QGuiApplication
+from PyQt6.QtCore import Qt, QUrl
 
 import requests
-from io import BytesIO
 import webbrowser
-import os
-
 
 class BookSearchApp(QWidget):
     def __init__(self):
@@ -16,8 +13,9 @@ class BookSearchApp(QWidget):
         # Set window size
         self.resize(800, 600)
 
-        # Set window position next to dock
-        screen_geometry = QDesktopWidget().screenGeometry()
+        # Set window position next to the primary screen
+        primary_screen = QGuiApplication.primaryScreen()
+        screen_geometry = primary_screen.geometry()
         self.move(50, int((screen_geometry.height() - self.height()) / 2))
 
         self.initUI()
@@ -62,7 +60,10 @@ class BookSearchApp(QWidget):
         query = self.search_box.text()
 
         params = {'q': query}
-        response = requests.get('https://www.googleapis.com/books/v1/volumes', params=params)
+        url = 'https://www.googleapis.com/books/v1/volumes'
+        print("URL:", url)
+        print("Params:", params)
+        response = requests.get(url, params=params, timeout=10)
         data = response.json()
 
         self.result_list.clear()
@@ -103,10 +104,10 @@ class BookSearchApp(QWidget):
             f.write(bibtext)
 
         msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
+        msg.setIcon(QMessageBox.Icon.Information)
         msg.setText("BibTeX citation has been saved to citation.bib")
         msg.setWindowTitle("Download Complete")
-        msg.exec_()
+        msg.exec()
 
     def generate_bibtext(self, book):
         # A basic example of a bibtex entry:
@@ -145,4 +146,4 @@ if __name__ == '__main__':
     ex = BookSearchApp()
     ex.show()
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
